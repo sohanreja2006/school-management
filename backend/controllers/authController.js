@@ -290,7 +290,7 @@ exports.completeProfile = async (req, res) => {
     }
 
     // 1. Create the school with more details
-    const { data: school, error: schoolError } = await supabase
+    let { data: school, error: schoolError } = await supabase
       .from('schools')
       .insert([{ 
         name: schoolName,
