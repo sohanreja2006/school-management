@@ -6,7 +6,7 @@ function validateOrExit() {
     return;
   }
 
-  const required = ['JWT_SECRET', 'SUPABASE_URL', 'SUPABASE_KEY', 'ALLOWED_ORIGINS'];
+  const required = ['JWT_SECRET', 'SUPABASE_URL', 'SUPABASE_KEY'];
   const missing = required.filter((k) => !process.env[k] || !String(process.env[k]).trim());
 
   if (missing.length) {
