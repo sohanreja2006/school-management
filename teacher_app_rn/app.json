@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "Academix Teacher",
+    "slug": "academix-teacher",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#8b5cf6"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSCameraUsageDescription": "Academix Teacher requires camera access to scan student QR attendance cards."
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#8b5cf6"
+      },
+      "permissions": [
+        "android.permission.CAMERA"
+      ]
+    },
+    "plugins": [
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Academix Teacher to access your camera to scan student QR attendance cards."
+        }
+      ]
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "sohanreja2006@gmail.com": {
+    "otp": "279782",
+    "expiresAt": 1778599529519,
+    "student": {
+      "id": "4f6711d2-4d54-4cf7-808c-6e6353ae7858",
+      "name": "sadat",
+      "class": "10",
+      "roll_number": "18",
+      "contact": "7365088377",
+      "parent_name": "SDATA",
+      "address": null,
+      "total_fees": 585484,
+      "paid_fees": 854,
+      "created_at": "2026-05-12T13:45:28.767862+00:00",
+      "school_id": "35a93a29-61a4-41bf-9f4f-400595a67798",
+      "parent_email": "sohanreja2006@gmail.com"
+    }
+  }
+}
