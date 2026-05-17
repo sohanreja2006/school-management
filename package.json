@@ -1,12 +1,23 @@
 {
-  "name": "academix-saas",
+  "name": "academix-saas-root",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "cd frontend && npm install && npm run build",
-    "install": "cd backend && npm install"
+    "build": "cd frontend && npm install && npm run build"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "@supabase/supabase-js": "^2.105.4",
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.5.1",
+    "firebase-admin": "^13.8.0",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.0",
+    "mongoose": "^7.0.3",
+    "nodemailer": "^8.0.7",
+    "pdfkit": "^0.18.0",
+    "resend": "^6.12.3"
   }
 }
