@@ -71,11 +71,14 @@ exports.requestOTP = async (req, res) => {
     const mongoose = require('mongoose');
     if (mongoose.connection.readyState === 1) {
       try {
-        await Otp.deleteMany({ email: emailNorm });
-        await Otp.create({
-          email: emailNorm,
-          otp: hashedOtp
-        });
+        await Promise.race([
+          Otp.deleteMany({ email: emailNorm }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('MongoDB timeout')), 2000))
+        ]);
+        await Promise.race([
+          Otp.create({ email: emailNorm, otp: hashedOtp }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('MongoDB timeout')), 2000))
+        ]);
       } catch (dbErr) {
         console.warn('[MongoDB WARNING] Failed to persist OTP to DB, falling back to Memory store:', dbErr.message);
       }
@@ -124,7 +127,10 @@ exports.register = async (req, res) => {
     const mongoose = require('mongoose');
     if (mongoose.connection.readyState === 1) {
       try {
-        otpRecord = await Otp.findOne({ email: emailNorm });
+        otpRecord = await Promise.race([
+          Otp.findOne({ email: emailNorm }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('MongoDB timeout')), 2000))
+        ]);
       } catch (dbErr) {
         console.warn('[MongoDB WARNING] Failed to fetch OTP from DB, attempting memory fallback:', dbErr.message);
       }
@@ -150,7 +156,10 @@ exports.register = async (req, res) => {
     inMemoryOtps.delete(emailNorm);
     if (mongoose.connection.readyState === 1) {
       try {
-        await Otp.deleteMany({ email: emailNorm });
+        await Promise.race([
+          Otp.deleteMany({ email: emailNorm }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('MongoDB timeout')), 2000))
+        ]);
       } catch (e) {}
     }
 

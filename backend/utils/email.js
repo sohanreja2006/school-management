@@ -27,13 +27,16 @@ exports.sendOTP = async (email, otp, institutionName) => {
     return { success: true, mode: 'virtual' };
   }
 
-  // Create reusable transporter object using the default SMTP transport
+  // Create reusable transporter object using the default SMTP transport with aggressive fail-fast timeouts
   const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
       user: emailUser,
       pass: emailPass,
     },
+    connectionTimeout: 3000,
+    greetingTimeout: 3000,
+    socketTimeout: 3000,
   });
 
   const htmlContent = `
@@ -53,12 +56,15 @@ exports.sendOTP = async (email, otp, institutionName) => {
   `;
 
   try {
-    const info = await transporter.sendMail({
-      from: `"Academix" <${emailUser}>`, // sender address
-      to: email, // list of receivers
-      subject: emailData.subject, // Subject line
-      html: htmlContent, // html body
-    });
+    const info = await Promise.race([
+      transporter.sendMail({
+        from: `"Academix" <${emailUser}>`, // sender address
+        to: email, // list of receivers
+        subject: emailData.subject, // Subject line
+        html: htmlContent, // html body
+      }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP connection timed out after 3.5 seconds')), 3500))
+    ]);
 
     console.log('Message sent: %s', info.messageId);
     return info;
