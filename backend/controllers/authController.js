@@ -70,20 +70,25 @@ exports.requestOTP = async (req, res) => {
     });
 
     try {
-      await sendOTP(emailNorm, otp, schoolName || 'Your Institution');
+      const emailResult = await sendOTP(emailNorm, otp, schoolName || 'Your Institution');
+      if (emailResult && emailResult.mode === 'virtual_fallback') {
+        return res.status(200).json({ 
+          success: true, 
+          message: 'OTP saved to Virtual Inbox (Google SMTP failed)', 
+          devOtp: otp 
+        });
+      }
       res.status(200).json({ success: true, message: 'OTP sent to your email' });
     } catch (emailErr) {
       console.warn('Failed to send OTP email:', emailErr.message);
-      
       throw emailErr;
     }
   } catch (err) {
     console.error('OTP Request Full Error:', err);
-    // Return specific error message if available, otherwise fallback
     const errorMessage = err.message || 'Internal server error';
     res.status(500).json({ 
       success: false, 
-      message: `Email Error: ${errorMessage}. If using a free Resend account, ensure you are sending to your own registered email.`
+      message: `Email Error: ${errorMessage}. Check your SMTP credentials or check the terminal output for the virtual inbox.`
     });
   }
 };
