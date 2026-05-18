@@ -27,11 +27,11 @@ exports.sendOTP = async (email, otp, institutionName) => {
     return { success: true, mode: 'virtual' };
   }
 
-  // Create reusable transporter object using robust cloud SMTP settings for Gmail
+  // Create reusable transporter object using STARTTLS (port 587) to bypass cloud port 465 blocking
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
-    port: 465,
-    secure: true, // use SSL
+    port: 587,
+    secure: false, // true for 465, false for other ports (uses STARTTLS)
     auth: {
       user: emailUser,
       pass: emailPass,
@@ -68,15 +68,14 @@ exports.sendOTP = async (email, otp, institutionName) => {
         subject: emailData.subject, // Subject line
         html: htmlContent, // html body
       }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP connection timed out after 15 seconds')), 15000))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP connection timed out after 15 seconds. Render might be blocking outbound port 587.')), 15000))
     ]);
 
     console.log('Message sent: %s', info.messageId);
     return info;
   } catch (err) {
-    console.warn('[SMTP WARNING] Nodemailer failed to send email via Google SMTP. Falling back to Virtual Inbox. Error:', err.message);
-    console.log(`\n========================================================\n[VIRTUAL INBOX FALLBACK] OTP Code: ${otp}\n========================================================\n`);
-    return { success: true, mode: 'virtual_fallback', otp };
+    console.error('[SMTP ERROR] Nodemailer failed to send email via Google SMTP:', err.message);
+    throw new Error(`Nodemailer SMTP Error: ${err.message}. If using Gmail, ensure your 16-character App Password is correct and that Google hasn't blocked the server IP.`);
   }
 };
 
