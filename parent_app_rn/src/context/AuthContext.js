@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
   const verifyOtp = async (email, parentKey) => {
     setIsLoading(true);
     try {
-      const res = await axios.post(`${API_URL}/auth/parent/verify-otp`, { email, parentKey });
+      const res = await axios.post(`${API_URL}/auth/parent/verify-otp`, { email, parentKey }, { timeout: 5000 });
       const { token: newToken, user } = res.data;
       
       await storage.setItem('token', newToken);

@@ -73,14 +73,22 @@ exports.getChildData = async (req, res) => {
     // 6. Safe Notifications - Filter by parent/student
     let notifications = [];
     try {
-      const { data: notifData } = await supabase
+      const { data: notifData, error: notifError } = await supabase
         .from('notifications')
         .select('*')
-        .or(`target_id.eq.parent_${studentId},target_role.eq.parent`)
+        .eq('school_id', schoolId)
+        .or(`student_id.eq.${studentId},student_id.is.null`)
         .order('created_at', { ascending: false })
         .limit(10);
-      notifications = notifData || [];
-    } catch (e) {}
+      
+      if (notifError) {
+        console.error('[getChildData] Supabase notifications query error:', notifError);
+      } else {
+        notifications = notifData || [];
+      }
+    } catch (e) {
+      console.error('[getChildData] Notifications catch block:', e);
+    }
 
     // 7. Safe Schedules (Timetable)
     let schedules = [];
@@ -219,8 +227,7 @@ exports.processPayment = async (req, res) => {
       school_id: schoolId,
       title: 'Fee Payment Received',
       message: `Successfully received ₹${balanceDue}. Your balance has been cleared.`,
-      target_role: 'parent',
-      target_id: `parent_${studentId}`
+      student_id: studentId
     });
 
     res.status(200).json({ success: true, message: 'Payment recorded successfully', amount_paid: balanceDue });

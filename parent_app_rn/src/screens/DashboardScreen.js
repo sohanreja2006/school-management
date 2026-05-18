@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, ScrollView, TouchableOpacity, SafeAreaView, ActivityIndicator, RefreshControl, Alert, Dimensions, Linking, Image } from 'react-native';
-import { LogOut, Calendar, Wallet, GraduationCap, BookOpen, TrendingUp, CheckCircle2, AlertCircle, Bell, Clock, QrCode, ArrowRight, Sun, Moon, Languages, Truck } from 'lucide-react-native';
+import { LogOut, Calendar, Wallet, GraduationCap, BookOpen, TrendingUp, CheckCircle2, AlertCircle, Bell, Clock, QrCode, ArrowRight, Sun, Moon, Languages, Truck, User, Home } from 'lucide-react-native';
 import { useAuth } from '../context/AuthContext';
 import { useTranslation } from 'react-i18next';
 import i18n from '../i18n';
@@ -15,6 +15,7 @@ export default function DashboardScreen({ navigation }) {
   const { userData, token, logout, isDarkMode, toggleDarkMode } = useAuth();
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState('overview');
+  const [academicSubTab, setAcademicSubTab] = useState('marks');
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [data, setData] = useState(null);
@@ -43,12 +44,13 @@ export default function DashboardScreen({ navigation }) {
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_URL}/parent/child-data`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 5000
       });
       setData(res.data.data);
     } catch (error) {
       console.error(error);
-      Alert.alert("Sync Error", "Could not fetch latest data.");
+      Alert.alert("Sync Error", "Could not connect to the school server. Please check if your backend API server is running.");
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -149,8 +151,17 @@ export default function DashboardScreen({ navigation }) {
   const todayStr = new Date().toISOString().split('T')[0];
   const todayStatus = attendance?.history?.find(a => a.date?.startsWith(todayStr))?.status || 'Not Marked';
 
+  const bottomTabs = [
+    { id: 'overview', label: 'Home', icon: Home },
+    { id: 'attendance', label: 'Attendance', icon: Calendar },
+    { id: 'fees', label: 'Fees', icon: Wallet },
+    { id: 'academics', label: 'Academics', icon: BookOpen },
+    { id: 'profile', label: 'Profile', icon: User },
+  ];
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+      {/* Top Header */}
       <View style={[styles.appBar, { backgroundColor: theme.card, borderBottomColor: theme.border, borderBottomWidth: 1 }]}>
         <View>
           <Text style={styles.appSubtitle}>{school?.name || t('Parent Portal')}</Text>
@@ -163,28 +174,11 @@ export default function DashboardScreen({ navigation }) {
           <TouchableOpacity style={[styles.iconBtn, { backgroundColor: theme.border }]} onPress={toggleDarkMode}>
             {isDarkMode ? <Sun size={18} color="#FBBF24" /> : <Moon size={18} color="#8b5cf6" />}
           </TouchableOpacity>
-          <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
-            <LogOut size={18} color="#F43F5E" />
-          </TouchableOpacity>
         </View>
       </View>
 
-      <View style={[styles.tabBar, { backgroundColor: theme.card }]}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10 }}>
-          {['overview', 'attendance', 'fees', 'marks', 'homework'].map((tab) => (
-            <TouchableOpacity 
-              key={tab}
-              onPress={() => setActiveTab(tab)}
-              style={[styles.tabItem, activeTab === tab ? styles.tabItemActive : { backgroundColor: theme.border }]}
-            >
-              <Text style={[styles.tabText, activeTab === tab ? styles.tabTextActive : { color: theme.subText }]}>{t(tab.charAt(0).toUpperCase() + tab.slice(1))}</Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-
       <ScrollView 
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 100 }]}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       >
         <LinearGradient colors={['#8b5cf6', '#7c3aed']} style={styles.studentCard}>
@@ -332,54 +326,167 @@ export default function DashboardScreen({ navigation }) {
           </View>
         )}
 
-        {activeTab === 'marks' && (
-          <View>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>{t("Subject Marks")}</Text>
-            {marks?.length > 0 ? marks.map((mark, idx) => (
-              <View key={idx} style={[styles.listItem, { backgroundColor: theme.card, borderColor: theme.border }]}>
-                <BookOpen size={20} color="#8b5cf6" />
-                <View style={styles.itemContent}>
-                  <Text style={[styles.itemTitle, { color: theme.text }]}>{mark.subjects?.name || 'Subject'}</Text>
-                  <Text style={styles.itemSubtitle}>{mark.exams?.name || 'Academic Exam'}</Text>
-                </View>
-                <Text style={styles.markValue}>{mark.marks_obtained}/{mark.subjects?.max_marks || 100}</Text>
+        {activeTab === 'academics' && (
+          <MotiView from={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            {/* Sub-tabs for Marks and Homework */}
+            <View style={[styles.academicSubTabBar, { backgroundColor: isDarkMode ? '#334155' : '#E2E8F0' }]}>
+              <TouchableOpacity 
+                style={[styles.academicSubTabItem, academicSubTab === 'marks' && [styles.academicSubTabItemActive, { backgroundColor: isDarkMode ? '#1E293B' : '#fff' }]]}
+                onPress={() => setAcademicSubTab('marks')}
+              >
+                <Text style={[styles.academicSubTabText, academicSubTab === 'marks' && styles.academicSubTabTextActive]}>
+                  {t('Exam Marks')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.academicSubTabItem, academicSubTab === 'homework' && [styles.academicSubTabItemActive, { backgroundColor: isDarkMode ? '#1E293B' : '#fff' }]]}
+                onPress={() => setAcademicSubTab('homework')}
+              >
+                <Text style={[styles.academicSubTabText, academicSubTab === 'homework' && styles.academicSubTabTextActive]}>
+                  {t('Assignments')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            {academicSubTab === 'marks' ? (
+              <View>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>{t("Subject Marks")}</Text>
+                {marks?.length > 0 ? marks.map((mark, idx) => (
+                  <View key={idx} style={[styles.listItem, { backgroundColor: theme.card, borderColor: theme.border }]}>
+                    <GraduationCap size={20} color="#8b5cf6" />
+                    <View style={styles.itemContent}>
+                      <Text style={[styles.itemTitle, { color: theme.text }]}>{mark.subjects?.name || 'Subject'}</Text>
+                      <Text style={styles.itemSubtitle}>{mark.exams?.name || 'Academic Exam'}</Text>
+                    </View>
+                    <Text style={styles.markValue}>{mark.marks_obtained}/{mark.subjects?.max_marks || 100}</Text>
+                  </View>
+                )) : (
+                  <View style={[styles.emptyCard, { backgroundColor: theme.card, borderColor: theme.border }]}><Text style={styles.emptyText}>{t("Marks not uploaded yet")}</Text></View>
+                )}
               </View>
-            )) : (
-              <View style={[styles.emptyCard, { backgroundColor: theme.card, borderColor: theme.border }]}><Text style={styles.emptyText}>{t("Marks not uploaded yet")}</Text></View>
+            ) : (
+              <View>
+                <Text style={[styles.sectionTitle, { color: theme.text }]}>{t("Homework & Assignments")}</Text>
+                {homework?.length > 0 ? homework.map((hw, idx) => {
+                  const isOverdue = new Date(hw.due_date) < new Date();
+                  return (
+                    <View key={idx} style={[styles.listItem, { backgroundColor: theme.card, borderColor: theme.border, flexDirection: 'column', alignItems: 'stretch' }]}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
+                        <BookOpen size={20} color="#8b5cf6" />
+                        <View style={styles.itemContent}>
+                          <Text style={[styles.itemTitle, { color: theme.text }]}>{hw.subjects?.name || 'Subject'}</Text>
+                          <Text style={[styles.itemSubtitle, { color: isOverdue ? '#EF4444' : theme.subText }]}>
+                            Due: {new Date(hw.due_date).toLocaleDateString()}
+                          </Text>
+                        </View>
+                        <View style={[styles.statusTag, { backgroundColor: isOverdue ? '#FEF2F2' : '#EEF2FF' }]}>
+                          <Text style={[styles.statusTagText, { color: isOverdue ? '#EF4444' : '#6366F1' }]}>
+                            {isOverdue ? 'Overdue' : 'Pending'}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={{ color: theme.text, fontSize: 13, lineHeight: 18, marginTop: 4 }}>{hw.description}</Text>
+                    </View>
+                  );
+                }) : (
+                  <View style={[styles.emptyCard, { backgroundColor: theme.card, borderColor: theme.border }]}><Text style={styles.emptyText}>{t("No homework assigned")}</Text></View>
+                )}
+              </View>
             )}
-          </View>
+          </MotiView>
         )}
 
-        {activeTab === 'homework' && (
-          <View>
-            <Text style={[styles.sectionTitle, { color: theme.text }]}>{t("Homework & Assignments")}</Text>
-            {homework?.length > 0 ? homework.map((hw, idx) => {
-              const isOverdue = new Date(hw.due_date) < new Date();
-              return (
-                <View key={idx} style={[styles.listItem, { backgroundColor: theme.card, borderColor: theme.border, flexDirection: 'column', alignItems: 'stretch' }]}>
-                  <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 8 }}>
-                    <BookOpen size={20} color="#8b5cf6" />
-                    <View style={styles.itemContent}>
-                      <Text style={[styles.itemTitle, { color: theme.text }]}>{hw.subjects?.name || 'Subject'}</Text>
-                      <Text style={[styles.itemSubtitle, { color: isOverdue ? '#EF4444' : theme.subText }]}>
-                        Due: {new Date(hw.due_date).toLocaleDateString()}
-                      </Text>
-                    </View>
-                    <View style={[styles.statusTag, { backgroundColor: isOverdue ? '#FEF2F2' : '#EEF2FF' }]}>
-                      <Text style={[styles.statusTagText, { color: isOverdue ? '#EF4444' : '#6366F1' }]}>
-                        {isOverdue ? 'Overdue' : 'Pending'}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text style={{ color: theme.text, fontSize: 13, lineHeight: 18, marginTop: 4 }}>{hw.description}</Text>
+        {activeTab === 'profile' && (
+          <MotiView from={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+            {/* Parent Profile Card */}
+            <View style={[styles.profileCard, { backgroundColor: theme.card, borderColor: theme.border }]}>
+              <View style={styles.profileHeader}>
+                <View style={[styles.profileAvatar, { backgroundColor: '#8b5cf6' }]}>
+                  <Text style={styles.profileAvatarText}>
+                    {userData?.email?.charAt(0).toUpperCase() || 'P'}
+                  </Text>
                 </View>
-              );
-            }) : (
-              <View style={[styles.emptyCard, { backgroundColor: theme.card, borderColor: theme.border }]}><Text style={styles.emptyText}>{t("No homework assigned")}</Text></View>
-            )}
-          </View>
+                <View style={styles.profileMeta}>
+                  <Text style={[styles.profileName, { color: theme.text }]}>
+                    {t('Parent / Guardian')}
+                  </Text>
+                  <Text style={[styles.profileEmail, { color: theme.subText }]}>
+                    {userData?.email || student?.parentEmail}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+              <Text style={[styles.profileSubtitle, { color: theme.subText }]}>
+                {t('Linked Student')}
+              </Text>
+              <View style={[styles.linkedStudentBox, { backgroundColor: theme.bg }]}>
+                <Image 
+                  source={{ uri: student?.photo || `https://ui-avatars.com/api/?name=${student?.name || 'Student'}&background=8B5CF6&color=fff` }} 
+                  style={styles.linkedStudentAvatar} 
+                />
+                <View>
+                  <Text style={[styles.linkedStudentName, { color: theme.text }]}>{student?.name}</Text>
+                  <Text style={[styles.linkedStudentDesc, { color: theme.subText }]}>
+                    {t('Class')} {student?.class} | Roll #{student?.rollNumber}
+                  </Text>
+                  <Text style={[styles.linkedStudentRelation, { color: '#8b5cf6' }]}>
+                    {t('Parent of')} {student?.name}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={[styles.divider, { backgroundColor: theme.border }]} />
+
+              <Text style={[styles.profileSubtitle, { color: theme.subText }]}>
+                {t('Institution Details')}
+              </Text>
+              <View style={[styles.institutionBox, { backgroundColor: theme.bg }]}>
+                <GraduationCap size={24} color="#8b5cf6" style={{ marginRight: 15 }} />
+                <View style={{ flex: 1 }}>
+                  <Text style={[styles.institutionName, { color: theme.text }]}>{school?.name || 'Academix School'}</Text>
+                  <Text style={[styles.institutionDetails, { color: theme.subText }]}>
+                    UPI ID: {school?.upi_id || 'Not Set'}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Logout Button inside Profile */}
+            <TouchableOpacity style={styles.profileLogoutBtn} onPress={logout}>
+              <LogOut size={20} color="#fff" />
+              <Text style={styles.profileLogoutBtnText}>{t('Sign Out')}</Text>
+            </TouchableOpacity>
+          </MotiView>
         )}
       </ScrollView>
+
+      {/* Floating Bottom Tab Bar */}
+      <View style={[styles.bottomTabBar, { backgroundColor: theme.card, borderTopColor: theme.border }]}>
+        {bottomTabs.map((tab) => {
+          const isActive = activeTab === tab.id;
+          const Icon = tab.icon;
+          return (
+            <TouchableOpacity 
+              key={tab.id}
+              onPress={() => setActiveTab(tab.id)}
+              style={styles.bottomTabItem}
+            >
+              <MotiView 
+                animate={{ scale: isActive ? 1.15 : 1 }} 
+                transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+                style={[styles.bottomTabIconContainer, isActive && { backgroundColor: '#8b5cf6' }]}
+              >
+                <Icon size={20} color={isActive ? '#fff' : theme.subText} />
+              </MotiView>
+              <Text style={[styles.bottomTabText, { color: isActive ? '#8b5cf6' : theme.subText }]}>
+                {t(tab.label)}
+              </Text>
+            </TouchableOpacity>
+          );
+        })}
+      </View>
     </SafeAreaView>
   );
 }
@@ -428,7 +535,7 @@ const styles = StyleSheet.create({
   iconBg: { width: 40, height: 40, borderRadius: 12, justifyContent: 'center', alignItems: 'center', marginBottom: 10 },
   statValue: { fontSize: 18, fontWeight: '900', color: '#1E293B', fontFamily: 'Outfit_700Bold' },
   statTitle: { fontSize: 11, color: '#94A3B8', fontWeight: 'bold', fontFamily: 'Outfit_400Regular' },
-  sectionTitle: { fontSize: 16, fontWeight: '900', color: '#1E293B', marginTop: 20, marginBottom: 15, fontFamily: 'Outfit_700Bold' },
+  sectionTitle: { fontSize: 16, fontFamily: 'Outfit_700Bold', fontWeight: '900', color: '#1E293B', marginTop: 20, marginBottom: 15 },
   paymentCard: { backgroundColor: '#fff', padding: 20, borderRadius: 25, borderWidth: 1, borderColor: '#F1F5F9', marginBottom: 20 },
   paymentHeader: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 15 },
   paymentTitle: { fontSize: 16, fontWeight: '900', color: '#1E293B' },
@@ -452,5 +559,182 @@ const styles = StyleSheet.create({
   notifTime: { color: '#94A3B8', fontSize: 11, fontWeight: 'medium', marginTop: 2 },
   emptyCard: { padding: 30, backgroundColor: '#fff', borderRadius: 20, alignItems: 'center', borderWidth: 1, borderColor: '#F1F5F9' },
   emptyText: { color: '#94A3B8', fontStyle: 'italic', fontSize: 13 },
-  feesSummary: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }
+  feesSummary: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
+
+  // Bottom Navigation Bar Styles
+  bottomTabBar: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 75,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    paddingBottom: 15,
+    borderTopWidth: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 10,
+    elevation: 10,
+  },
+  bottomTabItem: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    flex: 1,
+  },
+  bottomTabIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  bottomTabText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    fontFamily: 'Outfit_700Bold',
+  },
+
+  // Profile View Styles
+  profileCard: {
+    padding: 24,
+    borderRadius: 25,
+    borderWidth: 1,
+    marginBottom: 20,
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  profileAvatar: {
+    width: 60,
+    height: 60,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 15,
+  },
+  profileAvatarText: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: '900',
+  },
+  profileMeta: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 18,
+    fontWeight: '900',
+    fontFamily: 'Outfit_700Bold',
+  },
+  profileEmail: {
+    fontSize: 14,
+    fontFamily: 'Outfit_400Regular',
+    marginTop: 2,
+  },
+  profileSubtitle: {
+    fontSize: 12,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    marginBottom: 10,
+  },
+  divider: {
+    height: 1,
+    marginVertical: 20,
+  },
+  linkedStudentBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 20,
+    gap: 15,
+  },
+  linkedStudentAvatar: {
+    width: 50,
+    height: 50,
+    borderRadius: 15,
+  },
+  linkedStudentName: {
+    fontSize: 16,
+    fontWeight: '900',
+    fontFamily: 'Outfit_700Bold',
+  },
+  linkedStudentDesc: {
+    fontSize: 12,
+    fontFamily: 'Outfit_400Regular',
+    marginTop: 2,
+  },
+  linkedStudentRelation: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  institutionBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 20,
+  },
+  institutionName: {
+    fontSize: 15,
+    fontWeight: '900',
+    fontFamily: 'Outfit_700Bold',
+  },
+  institutionDetails: {
+    fontSize: 12,
+    fontFamily: 'Outfit_400Regular',
+    marginTop: 2,
+  },
+  profileLogoutBtn: {
+    backgroundColor: '#F43F5E',
+    padding: 16,
+    borderRadius: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 10,
+    marginBottom: 30,
+    shadowColor: '#F43F5E',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+  profileLogoutBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+    fontFamily: 'Outfit_700Bold',
+  },
+
+  // Academic Sub Tab Bar Styles
+  academicSubTabBar: {
+    flexDirection: 'row',
+    padding: 4,
+    borderRadius: 15,
+    marginBottom: 20,
+  },
+  academicSubTabItem: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 12,
+  },
+  academicSubTabItemActive: {
+    // Background color determined dynamically via props
+  },
+  academicSubTabText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#64748B',
+    fontFamily: 'Outfit_700Bold',
+  },
+  academicSubTabTextActive: {
+    color: '#8b5cf6',
+  },
 });

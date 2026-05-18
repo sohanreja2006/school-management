@@ -65,8 +65,7 @@ exports.markAttendance = async (req, res) => {
         message: isPresent 
           ? `Your child has arrived at school safely today (${formattedDate}).` 
           : `Your child was marked as ${status} today (${formattedDate}).`,
-        target_role: 'parent',
-        target_id: `parent_${studentId}`,
+        student_id: studentId,
         created_at: new Date()
       });
     } catch (e) { console.error('Notification failed:', e.message); }
