@@ -1,19 +1,26 @@
 import React, { useState } from 'react';
-import { Search, Bell, Moon, Sun, LogOut } from 'lucide-react';
+import { Search, Bell, Moon, Sun, LogOut, Menu } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import NotificationTray from './NotificationTray';
 import { useSearch } from '../context/SearchContext';
 import { useAuth } from '../context/AuthContext';
 
-const Navbar = ({ toggleDarkMode, darkMode }) => {
+const Navbar = ({ toggleDarkMode, darkMode, toggleSidebar }) => {
   const { searchQuery, setSearchQuery } = useSearch();
   const { logout, user } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
 
   return (
-    <header className="h-20 flex items-center justify-between px-10 sticky top-0 z-20 bg-transparent">
-      <div className="flex-1 max-w-2xl">
-        <div className="flex items-center gap-4 bg-white/80 dark:bg-secondary-800/80 backdrop-blur-md border border-secondary-200/50 dark:border-secondary-700/50 px-6 py-3 rounded-2xl w-full focus-within:ring-2 focus-within:ring-primary-500/20 focus-within:border-primary-400 shadow-sm transition-all duration-300">
+    <header className="h-20 flex items-center justify-between px-4 sm:px-10 sticky top-0 z-20 bg-transparent gap-4">
+      <div className="flex items-center gap-4 flex-1 max-w-2xl">
+        <button 
+          onClick={toggleSidebar}
+          className="p-2.5 text-secondary-500 hover:text-primary-600 hover:bg-white dark:hover:bg-secondary-800 rounded-xl transition-all duration-300 shadow-sm border border-transparent hover:border-secondary-100 dark:hover:border-secondary-700 lg:hidden shrink-0"
+        >
+          <Menu className="w-5 h-5" />
+        </button>
+        
+        <div className="flex items-center gap-4 bg-white/80 dark:bg-secondary-800/80 backdrop-blur-md border border-secondary-200/50 dark:border-secondary-700/50 px-4 sm:px-6 py-3 rounded-2xl w-full focus-within:ring-2 focus-within:ring-primary-500/20 focus-within:border-primary-400 shadow-sm transition-all duration-300">
           <Search className="w-5 h-5 text-secondary-400 shrink-0" />
           <input 
             type="text" 
@@ -25,7 +32,7 @@ const Navbar = ({ toggleDarkMode, darkMode }) => {
         </div>
       </div>
 
-      <div className="flex items-center gap-4 ml-8">
+      <div className="flex items-center gap-3 sm:gap-4 ml-2 sm:ml-8 shrink-0">
         <button 
           onClick={toggleDarkMode}
           className="p-2.5 text-secondary-500 hover:text-primary-600 hover:bg-white rounded-xl transition-all duration-300 shadow-sm border border-transparent hover:border-secondary-100"

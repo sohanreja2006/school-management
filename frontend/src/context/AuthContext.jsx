@@ -5,6 +5,11 @@ import { supabase } from '../config/supabaseClient';
 
 const AuthContext = createContext();
 
+let API_URL = import.meta.env.VITE_API_URL || '/api';
+if (API_URL !== '/api' && !API_URL.startsWith('http://') && !API_URL.startsWith('https://') && !API_URL.startsWith('/')) {
+  API_URL = `https://${API_URL}`;
+}
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,7 +47,7 @@ export const AuthProvider = ({ children }) => {
       const { user: sbUser } = session;
       
       // Sync with our backend
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/oauth-sync`, {
+      const response = await fetch(`${API_URL}/auth/oauth-sync`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

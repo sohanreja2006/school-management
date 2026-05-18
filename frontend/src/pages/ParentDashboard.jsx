@@ -91,10 +91,10 @@ const ParentDashboard = () => {
             </button>
             <button 
               onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-red-50 hover:text-red-600 text-gray-600 rounded-xl transition-all font-bold text-sm"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 bg-gray-50 hover:bg-red-50 hover:text-red-600 text-gray-600 rounded-xl transition-all font-bold text-sm"
             >
               <LogOut className="w-4 h-4" />
-              Logout
+              <span className="hidden sm:inline">Logout</span>
             </button>
           </div>
         </div>
@@ -132,12 +132,12 @@ const ParentDashboard = () => {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl w-fit">
+        <div className="flex gap-2 p-1 bg-gray-100 rounded-2xl w-full sm:w-fit overflow-x-auto scrollbar-none shrink-0">
           {['overview', 'attendance', 'fees', 'marks'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
+              className={`px-4 sm:px-6 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap ${
                 activeTab === tab 
                   ? 'bg-white text-primary-600 shadow-sm' 
                   : 'text-gray-500 hover:text-gray-700'

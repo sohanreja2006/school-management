@@ -30,10 +30,10 @@ import Button from '../components/ui/Button';
 import { useTranslation } from 'react-i18next';
 
 const WelcomeBanner = ({ name, schoolName }) => (
-  <div className="relative overflow-hidden bg-gradient-to-r from-primary-500 to-primary-400 rounded-[2.5rem] p-10 text-white mb-10 shadow-xl shadow-primary-500/20 flex items-center justify-between">
+  <div className="relative overflow-hidden bg-gradient-to-r from-primary-500 to-primary-400 rounded-[2.5rem] p-6 sm:p-10 text-white mb-10 shadow-xl shadow-primary-500/20 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
     <div className="relative z-10 max-w-lg">
       <div className="flex items-center gap-3 mb-2">
-        <p className="text-white/80 font-medium">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
+        <p className="text-white/80 font-medium text-sm">{new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</p>
         {schoolName && (
           <>
             <span className="w-1 h-1 bg-white/40 rounded-full"></span>
@@ -41,8 +41,8 @@ const WelcomeBanner = ({ name, schoolName }) => (
           </>
         )}
       </div>
-      <h2 className="text-5xl font-bold mb-4 tracking-tight">Welcome back, {name}!</h2>
-      <p className="text-white/80 text-lg">Always stay updated in your student portal. Check your latest updates and activities below.</p>
+      <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight leading-tight">Welcome back, {name}!</h2>
+      <p className="text-white/80 text-sm sm:text-lg">Always stay updated in your student portal. Check your latest updates and activities below.</p>
     </div>
 
     <div className="hidden lg:block relative z-10 w-[450px] h-64">

@@ -3,7 +3,10 @@ import axios from 'axios';
 import { User, Mail, Phone, MapPin, GraduationCap, Send, CheckCircle } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+let API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+if (!API_URL.startsWith('http://') && !API_URL.startsWith('https://') && !API_URL.startsWith('/')) {
+  API_URL = `https://${API_URL}`;
+}
 
 const AdmissionForm = () => {
   const { t } = useTranslation();

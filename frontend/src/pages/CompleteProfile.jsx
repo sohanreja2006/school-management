@@ -3,6 +3,11 @@ import { useAuth } from '../context/AuthContext';
 import { Loader2, User, School, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+let API_URL = import.meta.env.VITE_API_URL || '/api';
+if (API_URL !== '/api' && !API_URL.startsWith('http://') && !API_URL.startsWith('https://') && !API_URL.startsWith('/')) {
+  API_URL = `https://${API_URL}`;
+}
+
 const CompleteProfile = () => {
   const { user, setUser } = useAuth();
   const [formData, setFormData] = useState({
@@ -38,7 +43,7 @@ const CompleteProfile = () => {
 
     try {
       // We'll call a new endpoint to complete the profile
-      const response = await fetch(`${import.meta.env.VITE_API_URL || '/api'}/auth/complete-profile`, {
+      const response = await fetch(`${API_URL}/auth/complete-profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -1,8 +1,13 @@
 import axios from 'axios';
 import { auth } from './firebase';
 
+let apiUrl = import.meta.env.VITE_API_URL || '/api';
+if (apiUrl !== '/api' && !apiUrl.startsWith('http://') && !apiUrl.startsWith('https://') && !apiUrl.startsWith('/')) {
+  apiUrl = `https://${apiUrl}`;
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: apiUrl,
 });
 
 // Add a request interceptor to attach the token

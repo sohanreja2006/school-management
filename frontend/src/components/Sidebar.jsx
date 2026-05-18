@@ -26,13 +26,14 @@ import {
   ShieldCheck,
   GraduationCap as ExamIcon,
   User,
-  UserCheck
+  UserCheck,
+  X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import i18n from '../i18n';
 import { useTranslation } from 'react-i18next';
 
-const Sidebar = () => {
+const Sidebar = ({ isOpen, setIsOpen }) => {
   const { logout, user } = useAuth();
   const { t } = useTranslation();
 
@@ -72,8 +73,16 @@ const Sidebar = () => {
   });
 
   return (
-    <aside className="w-72 bg-primary-600 flex flex-col h-[calc(100vh-2rem)] sticky top-4 left-4 ml-4 my-4 rounded-[2.5rem] z-30 shadow-2xl overflow-hidden">
-      <div className="p-8 flex flex-col gap-6">
+    <aside className={`w-72 bg-primary-600 flex flex-col fixed lg:sticky top-0 lg:top-4 left-0 lg:left-4 h-full lg:h-[calc(100vh-2rem)] my-0 lg:my-4 ml-0 lg:ml-4 rounded-none lg:rounded-[2.5rem] z-50 lg:z-30 shadow-2xl overflow-hidden transition-transform duration-300 ease-in-out ${
+      isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+    }`}>
+      <div className="p-8 flex flex-col gap-6 relative">
+        <button 
+          onClick={() => setIsOpen(false)}
+          className="absolute top-6 right-6 p-2 text-white/70 hover:text-white hover:bg-white/10 rounded-xl lg:hidden transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
         <div className="flex items-center gap-4">
           <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center overflow-hidden">
             {user?.schoolLogo ? (
