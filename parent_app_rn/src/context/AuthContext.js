@@ -26,7 +26,7 @@ const storage = {
 };
 
 const AuthContext = createContext();
-const API_URL = 'http://192.168.31.230:5000/api'; 
+const API_URL = 'https://school-management-web-h75u.onrender.com/api'; 
 
 export function AuthProvider({ children }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);

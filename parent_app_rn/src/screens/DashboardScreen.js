@@ -9,7 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { MotiView } from 'moti';
 
 const { width } = Dimensions.get('window');
-const API_URL = 'http://192.168.31.230:5000/api';
+const API_URL = 'https://school-management-web-h75u.onrender.com/api';
 
 export default function DashboardScreen({ navigation }) {
   const { userData, token, logout, isDarkMode, toggleDarkMode } = useAuth();
