@@ -277,11 +277,18 @@ export default function DashboardScreen({ navigation }) {
                   <QrCode size={24} color={theme.text} />
                   <Text style={[styles.paymentTitle, { color: theme.text }]}>{t("Quick Pay (UPI)")}</Text>
                 </View>
-                <View style={[styles.qrContainer, { backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC', borderColor: theme.border }]}>
-                  <View style={styles.qrPlaceholder}>
-                     <Text style={[styles.qrText, { color: theme.text }]}>Scan to Pay ₹{student?.balance}</Text>
-                     <Text style={styles.qrSub}>UPI ID: {school?.upi_id || 'Not Set'}</Text>
-                  </View>
+                <View style={[styles.qrContainer, { backgroundColor: isDarkMode ? '#0F172A' : '#F8FAFC', borderColor: theme.border, height: 'auto', minHeight: 180, padding: 15 }]}>
+                  {school?.qr_code_url ? (
+                    <Image 
+                      source={{ uri: school.qr_code_url }} 
+                      style={{ width: 130, height: 130, resizeMode: 'contain', borderRadius: 10 }} 
+                    />
+                  ) : (
+                    <View style={styles.qrPlaceholder}>
+                       <Text style={[styles.qrText, { color: theme.text }]}>Scan to Pay ₹{student?.balance}</Text>
+                    </View>
+                  )}
+                  <Text style={[styles.qrSub, { color: theme.text, fontWeight: 'bold', marginTop: 10 }]}>UPI ID: {school?.upi_id || 'Not Set'}</Text>
                 </View>
                 
                 {!showConfirm ? (

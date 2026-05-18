@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { CreditCard, QrCode, Save, Info } from 'lucide-react';
+import { CreditCard, QrCode, Save, Info, Upload } from 'lucide-react';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 
@@ -30,6 +30,21 @@ const PaymentSettings = () => {
     };
     fetchSettings();
   }, []);
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert('File size exceeds 2MB limit. Please upload a smaller image.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData({ ...formData, qrCodeUrl: reader.result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -75,16 +90,37 @@ const PaymentSettings = () => {
               <div className="space-y-2">
                 <label className="text-sm font-bold text-secondary-700 flex items-center gap-2">
                   <QrCode className="w-4 h-4 text-primary-500" />
-                  Payment QR Code URL
+                  Payment QR Code
                 </label>
-                <input 
-                  type="text"
-                  placeholder="Link to your uploaded QR image"
-                  value={formData.qrCodeUrl}
-                  onChange={(e) => setFormData({...formData, qrCodeUrl: e.target.value})}
-                  className="w-full px-5 py-3.5 bg-secondary-50 border border-secondary-200 rounded-2xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium transition-all"
-                />
-                <p className="text-xs text-secondary-400 mt-1">Upload your QR code to a service like Cloudinary or ImgBB and paste the link here.</p>
+                
+                <div className="flex flex-col sm:flex-row gap-4 items-center">
+                  <div className="flex-1 w-full">
+                    <input 
+                      type="text"
+                      placeholder="Paste a direct URL to your QR image..."
+                      value={formData.qrCodeUrl}
+                      onChange={(e) => setFormData({...formData, qrCodeUrl: e.target.value})}
+                      className="w-full px-5 py-3.5 bg-secondary-50 border border-secondary-200 rounded-2xl outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 font-medium transition-all text-xs"
+                    />
+                  </div>
+                  <div className="relative flex-shrink-0 w-full sm:w-auto">
+                    <input 
+                      type="file"
+                      accept="image/*"
+                      id="qr-upload"
+                      onChange={handleFileChange}
+                      className="hidden"
+                    />
+                    <label 
+                      htmlFor="qr-upload" 
+                      className="w-full sm:w-auto px-6 py-4 bg-primary-50 text-primary-600 border-2 border-dashed border-primary-200 hover:bg-primary-100/50 rounded-2xl flex items-center justify-center gap-2 font-black cursor-pointer transition-all text-xs uppercase tracking-widest font-outfit"
+                    >
+                      <Upload className="w-4 h-4" />
+                      Upload QR File
+                    </label>
+                  </div>
+                </div>
+                <p className="text-[10px] text-secondary-400 mt-1">Select an image file from your device, or paste an existing image URL.</p>
               </div>
 
               <Button 

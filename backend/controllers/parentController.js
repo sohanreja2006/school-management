@@ -23,11 +23,11 @@ exports.getChildData = async (req, res) => {
     }
 
     // 2. Get School Payment Info
-    let schoolInfo = { upi_id: 'pending@upi', name: 'School' };
+    let schoolInfo = { upi_id: 'pending@upi', qr_code_url: '', name: 'School' };
     try {
       const { data: sData } = await supabase
         .from('schools')
-        .select('upi_id, name')
+        .select('upi_id, qr_code_url, name')
         .eq('id', schoolId)
         .single();
       if (sData) schoolInfo = sData;
@@ -114,7 +114,7 @@ exports.getChildData = async (req, res) => {
     try {
       const { data: hwData } = await supabase
         .from('homework')
-        .select('*, subjects(name)')
+        .select('*')
         .eq('school_id', schoolId)
         .eq('class', student.class)
         .order('due_date', { ascending: true });

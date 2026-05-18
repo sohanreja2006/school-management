@@ -57,6 +57,18 @@ h1, h2, h3, h4, h5, h6 {
   @apply w-full px-5 py-4 bg-white border border-slate-200 rounded-xl outline-none transition-all duration-300 placeholder:text-slate-400 font-medium text-slate-700;
 }
 
+.academix-input.pl-12 {
+  padding-left: 3rem !important;
+}
+
+.academix-input.pr-12 {
+  padding-right: 3rem !important;
+}
+
+.academix-input.pl-5 {
+  padding-left: 1.25rem !important;
+}
+
 .academix-input:focus {
   @apply border-blue-500 ring-4 ring-blue-500/5;
 }

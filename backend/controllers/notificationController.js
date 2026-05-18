@@ -8,10 +8,24 @@ exports.getNotifications = async (req, res) => {
       return res.status(200).json({ success: true, data: [] });
     }
 
-    const { data: notifications, error } = await supabase
+    let query = supabase
       .from('notifications')
       .select('*')
-      .eq('school_id', req.user.schoolId)
+      .eq('school_id', req.user.schoolId);
+
+    // Filter by role: parents see their child's private alerts + school announcements.
+    // Admins, teachers, and staff should only see school-wide announcements in their tray to avoid privacy leaks and noise.
+    if (req.user.role === 'parent') {
+      if (req.user.studentId) {
+        query = query.or(`student_id.eq.${req.user.studentId},student_id.is.null`);
+      } else {
+        query = query.is('student_id', null);
+      }
+    } else {
+      query = query.is('student_id', null);
+    }
+
+    const { data: notifications, error } = await query
       .order('created_at', { ascending: false })
       .limit(20);
 
