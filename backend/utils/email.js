@@ -27,16 +27,21 @@ exports.sendOTP = async (email, otp, institutionName) => {
     return { success: true, mode: 'virtual' };
   }
 
-  // Create reusable transporter object using the default SMTP transport with aggressive fail-fast timeouts
+  // Create reusable transporter object using robust cloud SMTP settings for Gmail
   const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // use SSL
     auth: {
       user: emailUser,
       pass: emailPass,
     },
-    connectionTimeout: 3000,
-    greetingTimeout: 3000,
-    socketTimeout: 3000,
+    tls: {
+      rejectUnauthorized: false // Bypass cloud container SSL certificate authority lookup delays
+    },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 15000,
   });
 
   const htmlContent = `
@@ -63,7 +68,7 @@ exports.sendOTP = async (email, otp, institutionName) => {
         subject: emailData.subject, // Subject line
         html: htmlContent, // html body
       }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP connection timed out after 3.5 seconds')), 3500))
+      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP connection timed out after 15 seconds')), 15000))
     ]);
 
     console.log('Message sent: %s', info.messageId);

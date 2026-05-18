@@ -17,6 +17,7 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState(1); // 1: Details, 2: OTP
   const [otp, setOtp] = useState('');
+  const [receivedDevOtp, setReceivedDevOtp] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [captchaVerified, setCaptchaVerified] = useState(false);
@@ -41,7 +42,11 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      await requestSignupOTP(formData.email, formData.schoolName || 'Your Institution');
+      const resData = await requestSignupOTP(formData.email, formData.schoolName || 'Your Institution');
+      if (resData?.devOtp) {
+        setReceivedDevOtp(resData.devOtp);
+        setOtp(resData.devOtp); // Auto pre-fill
+      }
       setStep(2);
     } catch (err) {
       setError(err.message);
@@ -335,6 +340,14 @@ const Signup = () => {
                     We've sent a verification code to <span className="text-slate-900 font-bold">{formData.email}</span>
                   </p>
                </div>
+
+               {receivedDevOtp && (
+                 <div className="p-5 bg-amber-50 border border-amber-200 rounded-2xl text-center animate-bounce">
+                   <p className="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">💡 Live Demo / Virtual Inbox Mode</p>
+                   <p className="text-sm text-amber-900 mb-2">Google SMTP is blocked by cloud firewall. Your verification code is pre-filled below:</p>
+                   <p className="text-2xl font-black text-amber-600 tracking-[0.3em]">{receivedDevOtp}</p>
+                 </div>
+               )}
 
                <div className="academix-input-group">
                   <label className="academix-label text-center">Verification Code</label>
