@@ -182,7 +182,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <button 
                 type="button" 
                 onClick={loginWithGoogle}

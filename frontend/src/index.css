@@ -38,7 +38,7 @@ h1, h2, h3, h4, h5, h6 {
 
 /* AcademicX Design System - Matches the provided UI */
 .academix-container {
-  @apply min-h-screen flex w-full bg-white overflow-hidden;
+  @apply min-h-screen flex w-full bg-white overflow-y-auto lg:overflow-hidden;
 }
 
 .academix-left {
@@ -46,7 +46,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .academix-right {
-  @apply flex-1 flex flex-col justify-center p-8 md:p-16 lg:p-24 bg-white;
+  @apply flex-1 flex flex-col justify-center p-6 sm:p-12 md:p-16 lg:p-24 bg-white;
 }
 
 .academix-input-group {
