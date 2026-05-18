@@ -186,12 +186,12 @@ export default function DashboardScreen({ navigation }) {
             <Image source={{ uri: student.photo }} style={styles.avatarImg} />
           ) : (
             <View style={styles.avatarContainer}>
-              <Text style={styles.avatarText}>{student?.name?.charAt(0) || 'S'}</Text>
+              <Text style={styles.avatarText}>{(student?.name || userData?.childName || 'S').charAt(0).toUpperCase()}</Text>
             </View>
           )}
           <View style={styles.studentInfo}>
-            <Text style={styles.studentName}>{student?.name}</Text>
-            <Text style={styles.studentDetails}>Class {student?.class} | Roll #{student?.rollNumber}</Text>
+            <Text style={styles.studentName}>{student?.name || userData?.childName || 'Student'}</Text>
+            <Text style={styles.studentDetails}>Class {student?.class || 'N/A'} | Roll #{student?.rollNumber || 'N/A'}</Text>
           </View>
         </LinearGradient>
 
@@ -430,16 +430,16 @@ export default function DashboardScreen({ navigation }) {
               </Text>
               <View style={[styles.linkedStudentBox, { backgroundColor: theme.bg }]}>
                 <Image 
-                  source={{ uri: student?.photo || `https://ui-avatars.com/api/?name=${student?.name || 'Student'}&background=8B5CF6&color=fff` }} 
+                  source={{ uri: student?.photo || `https://ui-avatars.com/api/?name=${student?.name || userData?.childName || 'Student'}&background=8B5CF6&color=fff` }} 
                   style={styles.linkedStudentAvatar} 
                 />
                 <View>
-                  <Text style={[styles.linkedStudentName, { color: theme.text }]}>{student?.name}</Text>
+                  <Text style={[styles.linkedStudentName, { color: theme.text }]}>{student?.name || userData?.childName}</Text>
                   <Text style={[styles.linkedStudentDesc, { color: theme.subText }]}>
-                    {t('Class')} {student?.class} | Roll #{student?.rollNumber}
+                    {t('Class')} {student?.class || 'N/A'} | Roll #{student?.rollNumber || 'N/A'}
                   </Text>
                   <Text style={[styles.linkedStudentRelation, { color: '#8b5cf6' }]}>
-                    {t('Parent of')} {student?.name}
+                    {t('Parent of')} {student?.name || userData?.childName}
                   </Text>
                 </View>
               </View>
@@ -531,8 +531,8 @@ const styles = StyleSheet.create({
   avatarText: { color: '#fff', fontSize: 24, fontWeight: '900' },
   avatarImg: { width: 55, height: 55, borderRadius: 20, borderWidth: 1, borderColor: 'rgba(255,255,255,0.2)' },
   studentInfo: { marginLeft: 15, flex: 1 },
-  studentName: { color: '#fff', fontSize: 18, fontWeight: '900', fontFamily: 'Outfit_700Bold' },
-  studentDetails: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontWeight: 'bold', fontFamily: 'Outfit_400Regular' },
+  studentName: { color: '#fff', fontSize: 18, fontFamily: 'Outfit_700Bold' },
+  studentDetails: { color: 'rgba(255,255,255,0.6)', fontSize: 13, fontFamily: 'Outfit_400Regular' },
   todayStatusBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', backgroundColor: '#fff', padding: 20, borderRadius: 25, marginBottom: 20, borderLeftWidth: 5, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.05, shadowRadius: 15, elevation: 2 },
   todayTitle: { fontSize: 10, fontWeight: '900', color: '#94A3B8', letterSpacing: 1 },
   todayValue: { fontSize: 20, fontWeight: '900', marginTop: 2 },
