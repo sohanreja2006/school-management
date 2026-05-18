@@ -24,7 +24,7 @@ function buildCorsOptions() {
         }
         return callback(new Error('Not allowed by CORS'));
       }
-      if (list.includes(origin) || origin.includes('vercel.app') || origin.includes('localhost')) {
+      if (list.includes(origin) || origin.includes('vercel.app') || origin.includes('onrender.com') || origin.includes('localhost')) {
         return callback(null, true);
       }
       return callback(new Error('Not allowed by CORS'));
