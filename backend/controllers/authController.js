@@ -5,6 +5,7 @@ const { getJwtSecret, getJwtExpiresIn } = require('../config/jwt');
 const { rejectWithoutSupabase } = require('../utils/saas');
 const { sendOTP } = require('../utils/email');
 const Otp = require('../models/Otp');
+const inMemoryOtps = new Map(); // Bulletproof in-memory fallback for MongoDB timeouts
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -60,14 +61,27 @@ exports.requestOTP = async (req, res) => {
     // Hash OTP using bcrypt
     const hashedOtp = await bcrypt.hash(otp, 10);
 
-    // Delete existing OTPs for this email to prevent spam
-    await Otp.deleteMany({ email: emailNorm });
-
-    // Store OTP in MongoDB
-    await Otp.create({
-      email: emailNorm,
-      otp: hashedOtp
+    // Save in-memory fallback always (failsafe, instantaneous, never blocks)
+    inMemoryOtps.set(emailNorm, {
+      otp: hashedOtp,
+      expiresAt: Date.now() + 300000 // 5 minutes
     });
+
+    // Try MongoDB storage ONLY if connection is active—otherwise skip gracefully to avoid hangs!
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await Otp.deleteMany({ email: emailNorm });
+        await Otp.create({
+          email: emailNorm,
+          otp: hashedOtp
+        });
+      } catch (dbErr) {
+        console.warn('[MongoDB WARNING] Failed to persist OTP to DB, falling back to Memory store:', dbErr.message);
+      }
+    } else {
+      console.log('MongoDB not fully connected yet. Storing OTP in-memory.');
+    }
 
     try {
       const emailResult = await sendOTP(emailNorm, otp, schoolName || 'Your Institution');
@@ -105,8 +119,23 @@ exports.register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Name, email, password, and OTP are required' });
     }
 
-    // Verify OTP from MongoDB
-    const otpRecord = await Otp.findOne({ email: emailNorm });
+    // Verify OTP (Try Mongo first if connected, then fall back to Memory)
+    let otpRecord = null;
+    const mongoose = require('mongoose');
+    if (mongoose.connection.readyState === 1) {
+      try {
+        otpRecord = await Otp.findOne({ email: emailNorm });
+      } catch (dbErr) {
+        console.warn('[MongoDB WARNING] Failed to fetch OTP from DB, attempting memory fallback:', dbErr.message);
+      }
+    }
+
+    if (!otpRecord) {
+      const memRecord = inMemoryOtps.get(emailNorm);
+      if (memRecord && memRecord.expiresAt > Date.now()) {
+        otpRecord = memRecord;
+      }
+    }
     
     if (!otpRecord) {
       return res.status(400).json({ success: false, message: 'Invalid or expired OTP' });
@@ -118,7 +147,12 @@ exports.register = async (req, res) => {
     }
 
     // OTP is valid, proceed with registration
-    await Otp.deleteMany({ email: emailNorm });
+    inMemoryOtps.delete(emailNorm);
+    if (mongoose.connection.readyState === 1) {
+      try {
+        await Otp.deleteMany({ email: emailNorm });
+      } catch (e) {}
+    }
 
     if (password.length < MIN_PASSWORD_LENGTH) {
       return res.status(400).json({
