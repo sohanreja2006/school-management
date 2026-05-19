@@ -22,6 +22,15 @@ function validateOrExit() {
   if (!process.env.EMAIL_PASS) {
     process.env.EMAIL_PASS = 'brotzvbbumdnyokn';
   }
+  if (!process.env.SMTP_HOST) {
+    process.env.SMTP_HOST = 'smtp.gmail.com';
+  }
+  if (!process.env.SMTP_PORT) {
+    process.env.SMTP_PORT = '587';
+  }
+  if (!process.env.SMTP_SECURE) {
+    process.env.SMTP_SECURE = 'false';
+  }
   if (!process.env.ALLOWED_ORIGINS) {
     process.env.ALLOWED_ORIGINS = 'http://localhost:5173,http://localhost:3000,https://school-management-web-h75u.onrender.com';
   }
