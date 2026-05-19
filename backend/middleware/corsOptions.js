@@ -15,16 +15,13 @@ function buildCorsOptions() {
       if (!origin) {
         return callback(null, true);
       }
-      if (!isProduction()) {
-        if (list.length === 0) {
-          return callback(null, true);
-        }
-        if (list.includes(origin)) {
-          return callback(null, true);
-        }
-        return callback(new Error('Not allowed by CORS'));
-      }
-      if (list.includes(origin) || origin.includes('vercel.app') || origin.includes('onrender.com') || origin.includes('localhost')) {
+      if (
+        list.includes(origin) ||
+        origin.includes('vercel.app') ||
+        origin.includes('onrender.com') ||
+        origin.includes('railway.app') ||
+        origin.includes('localhost')
+      ) {
         return callback(null, true);
       }
       return callback(new Error('Not allowed by CORS'));
