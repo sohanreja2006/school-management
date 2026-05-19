@@ -1,8 +1,39 @@
 const nodemailer = require('nodemailer');
-const axios = require('axios');
 
 // Virtual Inbox for unlimited local testing
 const virtualInbox = [];
+
+// Reusable Nodemailer transporter
+let transporter = null;
+
+function getTransporter() {
+  if (transporter) return transporter;
+
+  const emailUser = process.env.EMAIL_USER;
+  const emailPass = process.env.EMAIL_PASS;
+
+  if (!emailUser || !emailPass) {
+    return null;
+  }
+
+  transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // true for port 465, false for other ports (uses STARTTLS)
+    auth: {
+      user: emailUser,
+      pass: emailPass,
+    },
+    tls: {
+      rejectUnauthorized: false // Bypass cloud container SSL certificate authority lookup delays
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 10000,
+  });
+
+  return transporter;
+}
 
 exports.sendOTP = async (email, otp, institutionName) => {
   const emailUser = process.env.EMAIL_USER;
@@ -22,45 +53,12 @@ exports.sendOTP = async (email, otp, institutionName) => {
 
   console.log(`[VIRTUAL INBOX] OTP for ${email}: ${otp}`);
 
-  // 1. Attempt FormSubmit HTTPS API first (Port 443 - 100% bypasses Render outbound SMTP port blocking!)
-  try {
-    console.log(`Attempting to send real OTP email to ${email} via FormSubmit HTTPS API...`);
-    const formSubmitRes = await axios.post(`https://formsubmit.co/ajax/${email}`, {
-      _subject: 'Verify Your Institution - Academix',
-      _template: 'box',
-      Verification_Code: otp,
-      Institution: institutionName || 'Academix School',
-      Message: `You requested to register ${institutionName || 'Academix School'}. Your verification code is ${otp}. Code expires in 10 minutes.`
-    }, { timeout: 7000 });
-    
-    console.log('FormSubmit email sent successfully over HTTPS port 443:', formSubmitRes.data);
-    return { success: true, mode: 'formsubmit', info: formSubmitRes.data };
-  } catch (httpErr) {
-    console.warn('[HTTPS EMAIL WARNING] FormSubmit API attempt failed, falling back to Nodemailer SMTP:', httpErr.message);
-  }
-
   // If no email credentials, we just use the virtual inbox (unlimited mode)
-  if (!emailUser || !emailPass) {
-    console.log('No EMAIL_USER or EMAIL_PASS. OTP saved to Virtual Inbox only.');
+  const mailTransporter = getTransporter();
+  if (!mailTransporter) {
+    console.log('No EMAIL_USER or EMAIL_PASS configured. OTP saved to Virtual Inbox only.');
     return { success: true, mode: 'virtual', devOtp: otp };
   }
-
-  // 2. Fallback to Nodemailer STARTTLS (port 587)
-  const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // true for 465, false for other ports (uses STARTTLS)
-    auth: {
-      user: emailUser,
-      pass: emailPass,
-    },
-    tls: {
-      rejectUnauthorized: false // Bypass cloud container SSL certificate authority lookup delays
-    },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-  });
 
   const htmlContent = `
     <div style="font-family: sans-serif; max-width: 600px; margin: auto; padding: 40px; border: 1px solid #e2e8f0; border-radius: 24px; background-color: #ffffff;">
@@ -79,18 +77,16 @@ exports.sendOTP = async (email, otp, institutionName) => {
   `;
 
   try {
-    const info = await Promise.race([
-      transporter.sendMail({
-        from: `"Academix" <${emailUser}>`, // sender address
-        to: email, // list of receivers
-        subject: emailData.subject, // Subject line
-        html: htmlContent, // html body
-      }),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('SMTP connection timed out after 10 seconds. Render is blocking outbound SMTP ports.')), 10000))
-    ]);
+    console.log(`Attempting to send OTP email to ${email} via Nodemailer Gmail SMTP...`);
+    const info = await mailTransporter.sendMail({
+      from: `"Academix" <${emailUser}>`, // sender address
+      to: email, // list of receivers
+      subject: emailData.subject, // Subject line
+      html: htmlContent, // html body
+    });
 
     console.log('Message sent via Nodemailer: %s', info.messageId);
-    return info;
+    return { success: true, mode: 'nodemailer', info };
   } catch (err) {
     console.warn('[SMTP ERROR] Nodemailer failed to send email via Google SMTP. Falling back to Virtual Inbox. Error:', err.message);
     console.log(`\n========================================================\n[VIRTUAL INBOX FALLBACK] OTP Code: ${otp}\n========================================================\n`);
@@ -100,3 +96,4 @@ exports.sendOTP = async (email, otp, institutionName) => {
 };
 
 exports.getVirtualInbox = () => virtualInbox;
+

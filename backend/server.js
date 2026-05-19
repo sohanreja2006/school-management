@@ -10,7 +10,6 @@ const { apiLimiter } = require('./middleware/rateLimiters');
 
 // Load env vars
 dotenv.config({ path: './.env' });
-console.log('RESEND_API_KEY Loaded:', process.env.RESEND_API_KEY ? 'YES (Starts with ' + process.env.RESEND_API_KEY.substring(0, 5) + '...)' : 'NO');
 validateOrExit();
 
 // Connect to database

@@ -88,10 +88,10 @@ exports.requestOTP = async (req, res) => {
 
     try {
       const emailResult = await sendOTP(emailNorm, otp, schoolName || 'Your Institution');
-      if (emailResult && emailResult.mode === 'virtual_fallback') {
+      if (emailResult && (emailResult.mode === 'virtual_fallback' || emailResult.mode === 'virtual')) {
         return res.status(200).json({ 
           success: true, 
-          message: 'OTP saved to Virtual Inbox (Google SMTP failed)', 
+          message: emailResult.mode === 'virtual' ? 'OTP saved to Virtual Inbox (No email credentials)' : 'OTP saved to Virtual Inbox (Google SMTP failed)', 
           devOtp: otp 
         });
       }
